@@ -2,8 +2,8 @@ import pygame, random, sys
 from pygame.locals import *
 
 width, height = 640, 480
-max_shape_radius = 50.0
-cols, rows = 5, 5
+max_shape_radius = 40.0
+cols, rows = 8, 6 # FIXME: This ratio is related to screen resulution, changing will cause radius issues
 
 pygame.init()
 fpsClock = pygame.time.Clock()
@@ -22,6 +22,8 @@ shape_colors = ["white", "red", "green", "blue"]
 
 def circle(x, y):
 	return pygame.draw.circle(window, colors["blue"], (x, y), int(max_shape_radius))
+
+# TODO: Other shapes
 
 shapes = [circle]
 
@@ -43,9 +45,10 @@ def get_level_shape(x, y):
 # Generate level
 def generate_level():
 	global level_shapes
+	padding = width / cols / 2
 	level_shapes = [{
-		"x": x * width / cols,
-		"y": y * height / rows,
+		"x": padding + x * (width - padding * 2) / cols,
+		"y": padding + y * (height - padding * 2) / rows,
 		"shape": None,
 	} for x in xrange(cols) for y in xrange(rows)]
 
@@ -55,7 +58,6 @@ def generate_level():
 		print i
 		level_shapes[i]["shape"] = random.choice(shapes)
 		# TODO: Random position, color, rotation, etc..
-	print level_shapes
 
 # Draw the shapes in the current level
 def draw_level():
