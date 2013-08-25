@@ -32,7 +32,7 @@ pygame.font.init()
 font = pygame.font.Font("resources/fonts/DroidSans-Bold.ttf", 64)
 
 def circle(shape):
-
+	"""Create a circle"""
 	return pygame.draw.circle(window, shape["color"], shape["position"], shape["radius"])
 
 def square(shape):
@@ -45,7 +45,7 @@ def square(shape):
 shapes = [circle, square]
 
 mouse_x, mouse_y = 0, 0
-num_shapes = 10
+num_shapes = 3
 seconds_remaining = 10
 current_guess = 0
 
@@ -124,8 +124,12 @@ def draw_level():
 
 def draw_guess():
 	"""Draw the current shape being placed at the location of the mouse cursor"""
-	shape = level_shapes[current_guess]
-	shape["shape"](shape)
+	shape = level_shapes[current_guess]["shape"]
+	shape({
+		"position": [mouse_x, mouse_y],
+		"radius": sha,
+		"color": colors["white"]
+	})
 
 def next_level():
 	"""Increment difficulty before generating the next level"""
