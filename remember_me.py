@@ -20,8 +20,8 @@ colors = {
 }
 shape_colors = ["white", "red", "green", "blue"]
 
-def circle(x, y):
-	return pygame.draw.circle(window, random.choice(shape_colors), (x, y), int(max_shape_radius))
+def circle(shape):
+	return pygame.draw.circle(window, shape["color"], (shape["x"], shape["y"]), int(max_shape_radius))
 
 # TODO: Other shapes
 
@@ -49,13 +49,13 @@ def generate_level():
 	level_shapes = [{
 		"x": padding + x * (width - padding * 2) / cols,
 		"y": padding + y * (height - padding * 2) / rows,
+		"color": colors[random.choice(shape_colors)],
 		"shape": None,
 	} for x in xrange(cols) for y in xrange(rows)]
 
 	shapes_to_initialize = random.sample(level_shapes, num_shapes)
 	for s in shapes_to_initialize:
 		i = get_level_shape_index(s["x"], s["y"])
-		print i
 		level_shapes[i]["shape"] = random.choice(shapes)
 		# TODO: Random position, color, rotation, etc..
 
@@ -63,7 +63,7 @@ def generate_level():
 def draw_level():
 	for s in level_shapes:
 		if s["shape"] != None:
-			s["shape"](s["x"], s["y"])
+			s["shape"](s)
 
 # Generate initial level
 generate_level()
