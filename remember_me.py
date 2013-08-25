@@ -24,7 +24,7 @@ def circle(shape):
 	return pygame.draw.circle(window, shape["color"], (shape["x"], shape["y"]), int(max_shape_radius))
 
 def square(shape):
-	return pygame.draw.rect(window, shape["color"], (shape["x"] - max_shape_radius, shape["y"] - max_shape_radius / 2, max_shape_radius, max_shape_radius))
+	return pygame.draw.rect(window, shape["color"], (shape["x"] - max_shape_radius, shape["y"] - max_shape_radius / 2, max_shape_radius * 2, max_shape_radius * 2))
 
 # TODO: Other shapes
 
@@ -67,6 +67,12 @@ def draw_level():
 	for s in level_shapes:
 		if s["shape"] != None:
 			s["shape"](s)
+	# Draw lines for debug
+	# FIXME: Remove this
+	padding = width / cols / 2
+	for x in cols:
+		for y in rows:
+			pygame.draw.line(window, color["blue"], (), ())
 
 # Generate initial level
 generate_level()
