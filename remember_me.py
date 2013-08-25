@@ -2,7 +2,14 @@ import math, pygame, random, sys
 from pygame.locals import *
 
 width, height = 640, 480
-min_shape_radius, max_shape_radius = 40.0, 100.0
+center = (width / 2, height / 2)
+min_shape_radius, max_shape_radius = 40, 100
+
+# Event constants
+
+COUNTDOWN = pygame.USEREVENT + 1
+
+# Initialize pygame
 
 pygame.init()
 fpsClock = pygame.time.Clock()
@@ -21,13 +28,16 @@ colors = {
 }
 shape_colors = ["white", "red", "green", "blue"]
 
+pygame.font.init()
+font = pygame.font.Font("resources/fonts/DroidSans-Bold.ttf", 64)
+
 def circle(shape):
 
 	return pygame.draw.circle(window, shape["color"], shape["position"], shape["radius"])
 
 def square(shape):
 	"""Create a square that will fit inside a circle with radius shape.radius"""
-	side_length = math.sqrt(shape["radius"] ** 2 / 2)
+	side_length = math.sqrt((shape["radius"] * 2) ** 2 / 2)
 	return pygame.draw.rect(window, shape["color"], (shape["position"][0] - side_length / 2, shape["position"][1] - side_length / 2, side_length, side_length))
 
 # Global variables to store state information
@@ -36,6 +46,8 @@ shapes = [circle, square]
 
 mouse_x, mouse_y = 0, 0
 num_shapes = 10
+seconds_remaining = 10
+current_guess = 0
 
 level_shapes = []
 
@@ -56,6 +68,7 @@ def distance_between(a, b):
 	return math.hypot(a[0] - b[0], a[1] - b[1])
 
 def is_shape_in_bounds(shape):
+	"""Check whether the given shape is contained within the bounds of the screen"""
 	if shape["position"][0] > shape["radius"] and shape["position"][0] < width - shape["radius"]:
 		if shape["position"][1] > shape["radius"] and shape["position"][1] < height - shape["radius"]:
 			return True
@@ -73,12 +86,11 @@ def does_shape_collide_with_others(shape):
 
 def generate_level():
 	"""Generate a new level"""
-	global level_shapes
+	global level_shapes, seconds_remaining
 
 	for s in xrange(num_shapes):
 		shape = None
 		while True: # FIXME: Not terribly pythonic :P
-			print "Trying..."
 			shape = {
 				"position": [
 					random.randint(0, width),
@@ -93,15 +105,40 @@ def generate_level():
 					break
 		level_shapes.append(shape)
 
+	# Start the timer
+
+	seconds_remaining = 1
+	pygame.time.set_timer(COUNTDOWN, 1000)
+
 def draw_level():
-	"""Draw the shapes in the current level"""
+	"""Draw the shapes in the current level and level-specific UI elements"""
 	for s in level_shapes:
 		if s["shape"] != None:
 			s["shape"](s)
 
+	# Render countdown timer
+
+	label = font.render("%i" % seconds_remaining, 1, colors["white"])
+	pos = label.get_rect(centerx = center[0], centery = center[1])
+	window.blit(label, pos)
+
+def draw_guess():
+	"""Draw the current shape being placed at the location of the mouse cursor"""
+	shape = level_shapes[current_guess]
+	shape["shape"](shape)
+
 def next_level():
 	"""Increment difficulty before generating the next level"""
 	pass
+
+def count_down():
+	"""Count down by one"""
+	global mode, seconds_remaining
+
+	seconds_remaining -= 1
+
+	if seconds_remaining <= 0:
+		mode = "guess"
 
 # Generate initial level
 
@@ -109,8 +146,12 @@ generate_level()
 
 # Main game loop
 
+mode = "show"
+
 while True:
 	window.fill(colors.get("black"))
+
+	# Process event queue
 
 	for event in pygame.event.get():
 		if event.type == QUIT:
@@ -118,16 +159,17 @@ while True:
 			sys.exit()
 		elif event.type == MOUSEMOTION:
 			mouse_x, mouse_y = event.pos
+		elif event.type == COUNTDOWN:
+			count_down()
 
-	draw_level()
+	# Render
 
-	circle({
-		"position": [mouse_x, mouse_y],
-		"radius": 10,
-		"color": colors["white"]
-	})
+	if mode == "show":
+		draw_level()
+	else:
+		draw_guess()
 
-	window.set_alpha(100)
+	# Update display and advance time
 
 	pygame.display.update()
 	fpsClock.tick(30)
