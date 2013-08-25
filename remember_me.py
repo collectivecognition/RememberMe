@@ -21,7 +21,7 @@ colors = {
 shape_colors = ["white", "red", "green", "blue"]
 
 def circle(x, y):
-	return pygame.draw.circle(window, colors["blue"], (x, y), int(max_shape_radius))
+	return pygame.draw.circle(window, random.choice(shape_colors), (x, y), int(max_shape_radius))
 
 # TODO: Other shapes
 
