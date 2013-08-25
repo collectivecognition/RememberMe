@@ -23,9 +23,12 @@ shape_colors = ["white", "red", "green", "blue"]
 def circle(shape):
 	return pygame.draw.circle(window, shape["color"], (shape["x"], shape["y"]), int(max_shape_radius))
 
+def square(shape):
+	return pygame.draw.rect(window, shape["color"], (shape["x"] - max_shape_radius, shape["y"] - max_shape_radius / 2, max_shape_radius, max_shape_radius))
+
 # TODO: Other shapes
 
-shapes = [circle]
+shapes = [circle, square]
 
 mousex, mousey = 0, 0
 num_shapes = 3
