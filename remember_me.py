@@ -6,11 +6,9 @@ center = (width / 2, height / 2)
 min_shape_radius, max_shape_radius = 40, 100
 
 # Event constants
-
 COUNTDOWN = pygame.USEREVENT + 1
 
 # Initialize pygame
-
 pygame.init()
 fpsClock = pygame.time.Clock()
 
@@ -18,7 +16,6 @@ window = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Remember Me")
 
 # Constants / methods used for level generation
-
 colors = {
 	"black": pygame.Color(0, 0, 0),
 	"white": pygame.Color(255, 255, 255),
@@ -41,7 +38,6 @@ def square(shape):
 	return pygame.draw.rect(window, shape["color"], (shape["position"][0] - side_length / 2, shape["position"][1] - side_length / 2, side_length, side_length))
 
 # Global variables to store state information
-
 shapes = [circle, square]
 
 mouse_x, mouse_y = 0, 0
@@ -50,9 +46,9 @@ seconds_remaining = 10
 current_guess = 0
 
 level_shapes = []
+guess_shapes = []
 
 # Functions
-
 def get_level_shape_index(position):
 	"""Get a shape index based on x, y coordinates"""
 	for i, s in enumerate(level_shapes):
@@ -106,29 +102,34 @@ def generate_level():
 		level_shapes.append(shape)
 
 	# Start the timer
-
 	seconds_remaining = 1
 	pygame.time.set_timer(COUNTDOWN, 1000)
 
 def draw_level():
 	"""Draw the shapes in the current level and level-specific UI elements"""
-	for s in level_shapes:
-		if s["shape"] != None:
-			s["shape"](s)
+	draw_shapes(level_shapes)
 
 	# Render countdown timer
-
 	label = font.render("%i" % seconds_remaining, 1, colors["white"])
 	pos = label.get_rect(centerx = center[0], centery = center[1])
 	window.blit(label, pos)
 
+def draw_guesses():
+	"""Draw the current guesses"""
+	draw_shapes(guess_shapes)
+
+def draw_shapes(shapes):
+	for s in shapes:
+		if s["shape"] != None:
+			s["shape"](s)
+
 def draw_guess():
 	"""Draw the current shape being placed at the location of the mouse cursor"""
-	shape = level_shapes[current_guess]["shape"]
-	shape({
+	shape = level_shapes[current_guess]
+	shape["shape"]({
 		"position": [mouse_x, mouse_y],
-		"radius": sha,
-		"color": colors["white"]
+		"radius": shape["radius"],
+		"color": shape["color"],
 	})
 
 def next_level():
@@ -145,35 +146,46 @@ def count_down():
 		mode = "guess"
 
 # Generate initial level
-
 generate_level()
 
 # Main game loop
-
 mode = "show"
 
 while True:
 	window.fill(colors.get("black"))
 
 	# Process event queue
-
 	for event in pygame.event.get():
 		if event.type == QUIT:
 			pygame.quit()
 			sys.exit()
 		elif event.type == MOUSEMOTION:
 			mouse_x, mouse_y = event.pos
+		elif event.type == MOUSEBUTTONUP and mode == "guess":
+			# Place shape at mouse coords
+			shape = level_shapes[current_guess]
+			shape["position"] = (mouse_x, mouse_y)
+			guess_shapes.append(shape)
+			current_guess += 1
+
+			# Cancel timer
+			pygame.time.set_timer(COUNTDOWN, 0)
+
+			# End condition
+			if current_guess >= num_shapes:
+				mode = "results"
 		elif event.type == COUNTDOWN:
 			count_down()
 
 	# Render
-
 	if mode == "show":
 		draw_level()
-	else:
+	elif mode == "guess":
+		draw_guesses()
 		draw_guess()
+	elif mode == "results":
+		pass
 
 	# Update display and advance time
-
 	pygame.display.update()
 	fpsClock.tick(30)
